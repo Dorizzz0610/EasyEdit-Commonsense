@@ -2606,7 +2606,46 @@ def test_MALMEN():
 
     return metrics, edited_model
 
+def test_SERAC_llama3():
+    hparams = SERACHparams.from_hparams('./hparams/SERAC/llama3-8b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    # Assuming you have some dataset and other parameters set up
+    ds = ZsreDataset('./data/zsre_mend_eval.json')
+    metrics, edited_model, _ = editor.edit_dataset(ds)
+    # Debugging or detailed output
+    print(metrics)
+    import pdb; pdb.set_trace()
+    return metrics, edited_model
+
+def test_MEMIT_llama3():
+    hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/llama3.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    # Example prompts and edits
+    prompts = ['Ray Charles, the piano player', 'Grant Hill is known for basketball']
+    ground_truth = ['piano', 'basketball']
+    target_new = ['violin', 'soccer']
+    metrics, edited_model, _ = editor.edit(prompts=prompts, ground_truth=ground_truth, target_new=target_new)
+    # Debugging or detailed output
+    print(metrics)
+    import pdb; pdb.set_trace()
+    return metrics, edited_model
+
+def test_ROME_llama3():
+    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama3.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    prompts = ['What university did Watts Humphrey attend?']
+    ground_truth = ['Illinois Institute of Technology']
+    target_new = ['University of Michigan']
+    subject = ['Watts Humphrey']
+    metrics, edited_model, _ = editor.edit(prompts=prompts, ground_truth=ground_truth, target_new=target_new, subject=subject)
+    # Debugging or detailed output
+    print(metrics)
+    import pdb; pdb.set_trace()
+    return metrics, edited_model
+
+
 def main():
+    test_SERAC_llama3()
     # metrics, edited_model = test_KN()
 
     # metrics, edited_model = test_FT()
