@@ -4,11 +4,12 @@ from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
     SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, \
     GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams
-from easyeditor import ZsreDataset, CounterFactDataset
+from easyeditor import ZsreDataset, CounterFactDataset, AtomicDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
 from sentence_transformers import SentenceTransformer
-
+import pandas as pd
+from test_functions import test_SERAC_Mistral, test_MEMIT_Mistral, test_MEMIT_llama3, test_SERAC_llama3, test_MEND_llama3
 
 def test_KE():
     prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
@@ -2456,84 +2457,7 @@ def test_MEND_Train_Mistral():
 
     trainer.run()
 
-def test_MEND_Mistral():
-    prompts = ['Which family does Ramalinaceae belong to',
-               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
-               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
-               'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
-    ground_truth = ['Lecanorales', 'defender',
-                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
-    target_new = ['Lamiinae', 'winger',
-                  'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
-    hparams = MENDHyperParams.from_hparams('./hparams/MEND/mistral-7b')
-    editor = BaseEditor.from_hparams(hparams)
-    metrics, edited_model, _ = editor.edit(
-        prompts=prompts,
-        ground_truth=ground_truth,
-        target_new=target_new,
-        keep_original_weight=True
-    )
 
-    import pdb
-    pdb.set_trace()
-
-    return metrics, edited_model
-
-def test_MEMIT_Mistral():
-    prompts = ['Ray Charles, the',
-               'Grant Hill is a professional',
-               'The law in Ikaalinen declares the language'
-               ]
-    ground_truth = ['piano',
-                    'basketball',
-                    'Finnish'
-                    ]
-    target_new = ['violin',
-                  'soccer',
-                  'Swedish'
-                  ]
-    subject = ['Ray Charles',
-               'Grant Hill',
-               'Ikaalinen'
-               ]
-
-    locality_inputs = {
-        'neighborhood':{
-            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
-            'ground_truth': ['piano', 'basketball', 'Finnish']
-        },
-        'distracting': {
-            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
-            'ground_truth': ['piano', 'basketball', 'Finnish']
-        }
-    }
-    portability_inputs = {
-        'synonym':{
-            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
-            'ground_truth': ['violin', 'soccer', 'Swedish']
-        },
-        'one_hop':{
-            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
-            'ground_truth': ['violin', 'soccer', 'Swedish']
-        }
-    }
-
-    hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/mistral-7b')
-    editor = BaseEditor.from_hparams(hparams)
-    metrics, edited_model, _ = editor.edit(
-        prompts=prompts,
-        ground_truth=ground_truth,
-        target_new=target_new,
-        subject=subject,
-        locality_inputs=locality_inputs,
-        portability_inputs=portability_inputs,
-        keep_original_weight=True
-    )
-
-    import pdb
-    pdb.set_trace()
-
-    return metrics, edited_model
 
 
 def test_melo():
@@ -2606,46 +2530,105 @@ def test_MALMEN():
 
     return metrics, edited_model
 
-def test_SERAC_llama3():
-    hparams = SERACHparams.from_hparams('./hparams/SERAC/llama3-8b.yaml')
-    editor = BaseEditor.from_hparams(hparams)
-    # Assuming you have some dataset and other parameters set up
-    ds = ZsreDataset('./data/zsre_mend_eval.json')
-    metrics, edited_model, _ = editor.edit_dataset(ds)
-    # Debugging or detailed output
-    print(metrics)
-    import pdb; pdb.set_trace()
-    return metrics, edited_model
 
-def test_MEMIT_llama3():
-    hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/llama3.yaml')
-    editor = BaseEditor.from_hparams(hparams)
-    # Example prompts and edits
-    prompts = ['Ray Charles, the piano player', 'Grant Hill is known for basketball']
-    ground_truth = ['piano', 'basketball']
-    target_new = ['violin', 'soccer']
-    metrics, edited_model, _ = editor.edit(prompts=prompts, ground_truth=ground_truth, target_new=target_new)
-    # Debugging or detailed output
-    print(metrics)
-    import pdb; pdb.set_trace()
-    return metrics, edited_model
 
-def test_ROME_llama3():
-    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama3.yaml')
-    editor = BaseEditor.from_hparams(hparams)
-    prompts = ['What university did Watts Humphrey attend?']
-    ground_truth = ['Illinois Institute of Technology']
-    target_new = ['University of Michigan']
-    subject = ['Watts Humphrey']
-    metrics, edited_model, _ = editor.edit(prompts=prompts, ground_truth=ground_truth, target_new=target_new, subject=subject)
-    # Debugging or detailed output
-    print(metrics)
-    import pdb; pdb.set_trace()
-    return metrics, edited_model
+# locality_inputs = {
+#     'neighborhood': {
+#         'prompt': [
+#             'How would PersonX be described if PersonX ends PersonY’s life?',
+#             'How would PersonX be described if PersonX gives PersonY’s life?',
+#             'How does PersonX feel after the event of PersonX ends PersonY’s life?'
+#         ],
+#         'ground_truth': [
+#             'PersonX is a murderer',
+#             'PersonX is saving a child from drowning',
+#             'PersonX will feel disturbed'
+#         ]
+#     },
+#     'distracting': {
+#         'prompt': [
+#             'Considering legal consequences, how would PersonX be described if PersonX ends PersonY’s life?',
+#             'In a heroic context, how would PersonX be described if PersonX gives PersonY’s life?',
+#             'Considering psychological impact, how does PersonX feel after the event of PersonX ends PersonY’s life?'
+#         ],
+#         'ground_truth': [
+#             'PersonX is a murderer',
+#             'PersonX is saving a child from drowning',
+#             'PersonX will feel disturbed'
+#         ]
+#         }
+#     }
 
+#     portability_inputs = {
+#         'synonym': {
+#             'prompt': [
+#                 'What label fits PersonX if PersonX terminates PersonY’s existence?',
+#                 'What label fits PersonX if PersonX donates PersonY’s life?',
+#                 "What are PersonX's emotions following PersonX’s action that terminated PersonY’s life?"
+#             ],
+#             'ground_truth': [
+#                 'PersonX is a murderer',
+#                 'PersonX is donating blood',
+#                 'PersonX will feel disturbed'
+#             ]
+#         },
+#         'one_hop': {
+#             'prompt': [
+#                 'What description applies to PersonX if PersonX causes the death of PersonY?',
+#                 'What description applies to PersonX if PersonX assists in sustaining PersonY’s life?',
+#                 'What emotional state is PersonX in after causing the demise of PersonY?'
+#             ],
+#             'ground_truth': [
+#                 'PersonX is a murderer',
+#                 'PersonX is donating blood',
+#                 'PersonX will feel disturbed'
+#             ]
+#         }
+#     }
+
+
+def prepare_test_data(truth_path, llm_answer_path = ''):
+    test_data = pd.read_csv(truth_path)
+    prompts = test_data['question'].tolist()
+    ground_truth = None # pd.read_csv(llm_answer_path)['answer'].tolist()
+    target_new = test_data['answer'].tolist()
+    subject = test_data['head'].tolist()
+     # Extracting locality inputs
+    locality_inputs = {
+        'neighborhood': {
+            'prompt': test_data['neighborhood_prompt'].tolist(),
+            'ground_truth': test_data['neighborhood_ground_truth'].tolist()
+        },
+        'distracting': {
+            'prompt': test_data['distracting_prompt'].tolist(),
+            'ground_truth': test_data['distracting_ground_truth'].tolist()
+        }
+    }
+
+    # Extracting portability inputs
+    portability_inputs = {
+        'synonym': {
+            'prompt': test_data['synonym_prompt'].tolist(),
+            'ground_truth': test_data['synonym_ground_truth'].tolist()
+        },
+        'one_hop': {
+            'prompt': test_data['onehop_prompt'].tolist(),
+            'ground_truth': test_data['onehop_ground_truth'].tolist()
+        }
+    }
+    return prompts, ground_truth, target_new, subject, locality_inputs, portability_inputs
 
 def main():
-    test_SERAC_llama3()
+    prompts, ground_truth, target_new, subject, locality_inputs, portability_inputs = prepare_test_data('./test_editing.csv')
+    
+
+    # test_SERAC_Mistral(prompts, ground_truth, target_new, subject)
+
+    test_MEMIT_Mistral(prompts, ground_truth, target_new, subject, locality_inputs, portability_inputs)
+
+    # test_SERAC_llama3()
+    # test_MEMIT_llama3(prompts, ground_truth, target_new, subject)
+
     # metrics, edited_model = test_KN()
 
     # metrics, edited_model = test_FT()
@@ -2691,7 +2674,7 @@ def main():
     # test_SERAC_Zsre_Train_GPTJ()
     # test_SERAC_Zsre_Train_T5()
     # test_SERAC_T5()
-    test_ROME_LlaMA()
+    # test_ROME_LlaMA()
     # test_ROME_DEMO()
     # ROME_DEMO_2()
     # test_Llama2()
