@@ -125,7 +125,7 @@ def layer_stats(
         return TokenizedDataset(raw_ds["train"], tokenizer, maxlen=maxlen)
 
     # Continue with computation of statistics
-    batch_size = 100  # Examine this many dataset texts at once
+    batch_size = 1  # Examine this many dataset texts at once
     if hasattr(model.config, 'n_positions'):
         npos = model.config.n_positions
     elif hasattr(model.config, 'max_sequence_length'):
@@ -175,7 +175,7 @@ def layer_stats(
         collate_fn=length_collation(batch_tokens),
         pin_memory=True,
         random_sample=1,
-        num_workers=2,
+        num_workers=8,
     )
     batch_count = -(-(sample_size or len(ds)) // batch_size)
     with torch.no_grad():

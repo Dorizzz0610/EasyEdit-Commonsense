@@ -557,6 +557,8 @@ class BaseEditor:
                 if isinstance(locality_inputs[locality_key]['prompt'], str):
                     locality_inputs[locality_key]['prompt'] = [locality_inputs[locality_key]['prompt'],]
                     locality_inputs[locality_key]['ground_truth'] = [locality_inputs[locality_key]['ground_truth'], ]
+                print('LOCALITY KEY:', locality_key)
+                print('LOCALITY INPUTS:', locality_inputs)
                 assert len(locality_inputs[locality_key]['prompt']) == len(locality_inputs[locality_key]['ground_truth']) \
                 == len(requests), print('One Edit instance needs one locality input.....')
 

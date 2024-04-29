@@ -9,6 +9,8 @@ from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
 from sentence_transformers import SentenceTransformer
 import pandas as pd
+import torch
+import os 
 from test_functions import test_SERAC_Mistral, test_MEMIT_Mistral, test_MEMIT_llama3, test_SERAC_llama3, test_MEND_llama3
 
 def test_KE():
@@ -2619,6 +2621,11 @@ def prepare_test_data(truth_path, llm_answer_path = ''):
     return prompts, ground_truth, target_new, subject, locality_inputs, portability_inputs
 
 def main():
+    torch.cuda.empty_cache()
+
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:7000"
+
+
     prompts, ground_truth, target_new, subject, locality_inputs, portability_inputs = prepare_test_data('./test_editing.csv')
     
 
